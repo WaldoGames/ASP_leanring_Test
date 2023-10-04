@@ -1,0 +1,26 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+@model TestModelCollection
+
+<div class="text-center">
+    <h1 class="display-4">Welcome AAAAAAAAAAAAAAAAA</h1>
+    <a class="nav-link text-dark" asp-area="" asp-controller="Test" asp-action="Create">Create</a>
+
+    <ul>
+    @foreach (var emp in Model.ModelList)
+    {
+
+            <li> @emp.text - @emp.disc --- <a asp-controller="Test" asp-action="Delete" asp-route-id="@emp.id">Delete</a>
+                @if (emp.ImagePath != null && emp.ImagePath != "")
+                {
+                    <br>
+                    <img width="300" src="~/Images/@emp.ImagePath" />
+                }
+            </li>
+            
+
+    }
+    </ul>
+    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div>
