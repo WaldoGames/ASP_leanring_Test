@@ -1,0 +1,39 @@
+﻿@model WebApplication3.Models.TestModelTagEdit
+
+@{
+    ViewData["Title"] = "EditTags";
+}
+
+<h1>TagEdit</h1>
+
+<h4>TestModelTagEdit</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="EditTags" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            @foreach (var tag in ViewBag.Tags as List<WebApplication3.Models.Tags>)
+            {
+                <div>
+                    <label>
+                        <input type="checkbox" name="SelectedTagIds" value="@tag.id"
+                        @(Model.SelectedTagIds != null && Model.SelectedTagIds.Contains(tag.id) ? "checked" : "") />
+                        @tag.name
+                    </label>
+                </div>
+            }
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

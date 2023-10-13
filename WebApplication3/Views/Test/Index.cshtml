@@ -11,7 +11,8 @@
     @foreach (var emp in Model.ModelList)
     {
 
-            <li> @emp.text - @emp.disc --- <a asp-controller="Test" asp-action="Delete" asp-route-id="@emp.id">Delete</a>
+            <li>
+                @emp.text - @emp.disc --- <a asp-controller="Test" asp-action="Delete" asp-route-id="@emp.id">Delete</a>-- <a asp-controller="Test" asp-action="Details" asp-route-id="@emp.id">Details</a>
                 @if (emp.ImagePath != null && emp.ImagePath != "")
                 {
                     <br>
@@ -21,6 +22,28 @@
             
 
     }
+        @if (ViewBag.Tags != null)
+        {
+        <form method="GET">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+
+                @foreach (var tag in ViewBag.Tags as List<WebApplication3.Models.Tags>)
+            {
+                <div>
+                    <label>
+                        <input type="checkbox" name="SelectedTagIds" value="@tag.id"
+                        @(Model.SelectedTagIds != null && Model.SelectedTagIds.Contains(tag.id) ? "checked" : "") />
+                        @tag.name
+                    </label>
+                </div>
+            }
+
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+        }
     </ul>
     <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
 </div>

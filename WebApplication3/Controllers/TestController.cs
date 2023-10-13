@@ -16,6 +16,9 @@ using DBLayer.Models;
 using Microsoft.AspNetCore;
 using System.Runtime.CompilerServices;
 using Microsoft.DotNet.Scaffolding.Shared.Project;
+using DbLayer.Models;
+using Microsoft.AspNetCore.Mvc.Razor.Infrastructure;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace WebApplication3.Controllers
 {
@@ -27,10 +30,10 @@ namespace WebApplication3.Controllers
             WebHost = webHost;
         }
 
-        // GET: testController
-        public ActionResult Index()
+        // GET: testController TestModelCollection
+        /*public ActionResult Index()
         {
-            
+            DBContext DB = new DBContext();
             TestModelCollection models = new TestModelCollection();
             models.ModelList = new List<TestModelView>();
             List<Test> test = new DBContext().testCall1();
@@ -46,15 +49,63 @@ namespace WebApplication3.Controllers
                 model.ImagePath = test_Obj.imgpath;
                 models.ModelList.Add(model);
             }
+            ViewBag.Tags = TagDbToTag(DB.GetAllTags());
+            return View(models);
+        }*/
 
+        public ActionResult Index(TestModelCollection testModelCollection)
+        {
+            DBContext DB = new DBContext();
+            TestModelCollection models = new TestModelCollection();
+            models.ModelList = new List<TestModelView>();
+            List<Test> test;
+            if (testModelCollection.SelectedTagIds == null)
+            {
+                test = DB.testCall1();
+            }
+            else
+            {
+                test = DB.testCall1(testModelCollection.SelectedTagIds);
+            }
+
+
+            test = test.OrderByDescending(o => o.id).ToList();
+
+            foreach (var test_Obj in test)
+            {
+                TestModelView model = new TestModelView();
+                model.text = test_Obj.text;
+                model.disc = test_Obj.disc;
+                model.id = test_Obj.id;
+                model.ImagePath = test_Obj.imgpath;
+                models.ModelList.Add(model);
+            }
+            ViewBag.Tags = TagDbToTag(DB.GetAllTags());
             return View(models);
         }
-    
+
 
         // GET: testController/Details/5
         public ActionResult Details(int id)
         {
-            return View();
+            TestModelView test = new TestModelView();
+            try
+            {
+                DBContext DB = new DBContext();
+
+                TestModelView model = new TestModelView();
+                Test t = DB.GetById(id);
+                model.text = t.text;
+                model.disc = t.disc;
+                model.id = t.id;
+                model.ImagePath = t.imgpath;
+
+                return View(model);
+            }
+            catch
+            {
+                return RedirectToAction("Index");
+            }
         }
 
         // GET: testController/Create
@@ -102,6 +153,65 @@ namespace WebApplication3.Controllers
             {
                 return View();
             }
+        }
+
+        public ActionResult EditTags(int id)
+        {
+            DBContext DB = new DBContext();
+            TestModelTagEdit tm = new TestModelTagEdit();
+            tm.Post = DB.GetById(id);
+            ViewBag.Tags = TagDbToTag( DB.GetAllTags());
+
+            tm.PostTags = TagDbToTag( DB.GetPostTags(id));
+
+            tm.SelectedTagIds = tm.PostTags.Select(t => t.id).ToList();
+
+            return View(tm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult EditTags(int id, TestModelTagEdit tags)
+        {
+            
+            DBContext DB = new DBContext();
+
+            List<Tags> tagList = TagDbToTag(DB.GetAllTags());
+
+            foreach (Tags tag in tagList)
+            {
+                if (tags.SelectedTagIds.Contains(tag.id))
+                {
+                    DB.TryCreateTagConnection(id, tag.id);
+                }
+                else
+                {
+                    DB.TryRemoveTagConnection(id, tag.id);
+                }
+            }
+            TestModelTagEdit tm = new TestModelTagEdit();
+            tm.Post = DB.GetById(id);
+            ViewBag.Tags = TagDbToTag(DB.GetAllTags());
+
+            tm.PostTags = TagDbToTag(DB.GetPostTags(id));
+
+            tm.SelectedTagIds = tm.PostTags.Select(t => t.id).ToList();
+
+            return View(tm);
+        }
+
+        public List<Tags> TagDbToTag( List<TagDB> TDB)
+        {
+            List<Tags> tags = new List<Tags>();
+
+            foreach (TagDB item in TDB)
+            {
+                Tags tag = new Tags();
+                tag.name = item.name;
+                tag.id = item.id;
+                tags.Add(tag);
+            }
+            return tags;
         }
 
         // GET: testController/Delete/5
